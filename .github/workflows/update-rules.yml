@@ -14,38 +14,26 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Download from kelee.one
-        shell: bash
+      - name: Download rules from blackmatrix7
         run: |
-          UA="clash.meta/1.18.0"
-          curl -sL -A "$UA" -o rule_provider/Telegram.list "https://rule.kelee.one/Loon/Telegram.lsr"
-          curl -sL -A "$UA" -o rule_provider/TikTok.list "https://kelee.one/Tool/Loon/Lsr/TikTok.lsr"
-          curl -sL -A "$UA" -o rule_provider/AI.list "https://kelee.one/Tool/Loon/Lsr/AI.lsr"
-          curl -sL -A "$UA" -o rule_provider/AppleAccount.list "https://kelee.one/Tool/Loon/Lsr/AppleAccount.lsr"
-          curl -sL -A "$UA" -o rule_provider/AppStore.list "https://kelee.one/Tool/Loon/Lsr/AppStore.lsr"
-          curl -sL -A "$UA" -o rule_provider/GitHub.list "https://rule.kelee.one/Loon/GitHub.lsr"
-          curl -sL -A "$UA" -o rule_provider/Netflix.list "https://rule.kelee.one/Loon/Netflix.lsr"
-          curl -sL -A "$UA" -o rule_provider/YouTube.list "https://rule.kelee.one/Loon/YouTube.lsr"
-          curl -sL -A "$UA" -o rule_provider/Disney.list "https://rule.kelee.one/Loon/Disney.lsr"
-          curl -sL -A "$UA" -o rule_provider/Twitter.list "https://rule.kelee.one/Loon/Twitter.lsr"
-          curl -sL -A "$UA" -o rule_provider/Facebook.list "https://rule.kelee.one/Loon/Facebook.lsr"
-          curl -sL -A "$UA" -o rule_provider/Instagram.list "https://rule.kelee.one/Loon/Instagram.lsr"
-          curl -sL -A "$UA" -o rule_provider/Spotify.list "https://rule.kelee.one/Loon/Spotify.lsr"
-          curl -sL -A "$UA" -o rule_provider/Google.list "https://rule.kelee.one/Loon/Google.lsr"
-          curl -sL -A "$UA" -o rule_provider/OneDrive.list "https://rule.kelee.one/Loon/OneDrive.lsr"
+          GH="https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash"
+          curl -sL -o rule_provider/Telegram.list "$GH/Telegram/Telegram.list"
+          curl -sL -o rule_provider/TikTok.list "$GH/TikTok/TikTok.list"
+          curl -sL -o rule_provider/AI.list "$GH/OpenAI/OpenAI.list"
+          curl -sL -o rule_provider/AppleAccount.list "$GH/Apple/Apple.list"
+          curl -sL -o rule_provider/AppStore.list "$GH/AppStore/AppStore.list"
+          curl -sL -o rule_provider/GitHub.list "$GH/GitHub/GitHub.list"
+          curl -sL -o rule_provider/Netflix.list "$GH/Netflix/Netflix.list"
+          curl -sL -o rule_provider/YouTube.list "$GH/YouTube/YouTube.list"
+          curl -sL -o rule_provider/Disney.list "$GH/Disney/Disney.list"
+          curl -sL -o rule_provider/Twitter.list "$GH/Twitter/Twitter.list"
+          curl -sL -o rule_provider/Facebook.list "$GH/Facebook/Facebook.list"
+          curl -sL -o rule_provider/Instagram.list "$GH/Instagram/Instagram.list"
+          curl -sL -o rule_provider/Spotify.list "$GH/Spotify/Spotify.list"
+          curl -sL -o rule_provider/Google.list "$GH/Google/Google.list"
+          curl -sL -o rule_provider/OneDrive.list "$GH/OneDrive/OneDrive.list"
 
-      - name: Validate kelee.one files
-        run: |
-          for f in rule_provider/*.list; do
-            size=$(wc -c < "$f")
-            if [ "$size" -le 100 ]; then
-              echo "ERROR: $f is too small ($size bytes)"
-              exit 1
-            fi
-            echo "  $f ($size bytes)"
-          done
-
-      - name: Download from GitHub/CDN
+      - name: Download other rules
         run: |
           curl -sL -o rule_provider/Steam.list \
             "https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/refs/heads/master/Clash/Ruleset/Steam.list"
@@ -53,6 +41,14 @@ jobs:
             "https://fastly.jsdelivr.net/gh/fmz200/wool_scripts@main/Loon/rule/LAN.list"
           curl -sL -o rule_provider/mihomo.mrs \
             "https://fastly.jsdelivr.net/gh/privacy-protection-tools/anti-ad.github.io@master/docs/mihomo.mrs"
+
+      - name: Validate
+        run: |
+          for f in rule_provider/*; do
+            size=$(wc -c < "$f")
+            echo "  $f ($size bytes)"
+            [ "$size" -gt 100 ] || { echo "ERROR: $f too small"; exit 1; }
+          done
 
       - name: Commit & Push
         run: |

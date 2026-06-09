@@ -3,31 +3,26 @@ set -e
 
 REPO_DIR="/data/data/com.termux/files/home/downloads"
 RULE_DIR="$REPO_DIR/rule_provider"
-UA="clash.meta/1.18.0"
+GH="https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash"
 MIN_SIZE=100
 
-source_urls() {
+urls() {
   cat <<'EOF'
-Telegram.list|https://rule.kelee.one/Loon/Telegram.lsr
-TikTok.list|https://kelee.one/Tool/Loon/Lsr/TikTok.lsr
-AI.list|https://kelee.one/Tool/Loon/Lsr/AI.lsr
-AppleAccount.list|https://kelee.one/Tool/Loon/Lsr/AppleAccount.lsr
-AppStore.list|https://kelee.one/Tool/Loon/Lsr/AppStore.lsr
-GitHub.list|https://rule.kelee.one/Loon/GitHub.lsr
-Netflix.list|https://rule.kelee.one/Loon/Netflix.lsr
-YouTube.list|https://rule.kelee.one/Loon/YouTube.lsr
-Disney.list|https://rule.kelee.one/Loon/Disney.lsr
-Twitter.list|https://rule.kelee.one/Loon/Twitter.lsr
-Facebook.list|https://rule.kelee.one/Loon/Facebook.lsr
-Instagram.list|https://rule.kelee.one/Loon/Instagram.lsr
-Spotify.list|https://rule.kelee.one/Loon/Spotify.lsr
-Google.list|https://rule.kelee.one/Loon/Google.lsr
-OneDrive.list|https://rule.kelee.one/Loon/OneDrive.lsr
-EOF
-}
-
-direct_urls() {
-  cat <<'EOF'
+Telegram.list|${GH}/Telegram/Telegram.list
+TikTok.list|${GH}/TikTok/TikTok.list
+AI.list|${GH}/OpenAI/OpenAI.list
+AppleAccount.list|${GH}/Apple/Apple.list
+AppStore.list|${GH}/AppStore/AppStore.list
+GitHub.list|${GH}/GitHub/GitHub.list
+Netflix.list|${GH}/Netflix/Netflix.list
+YouTube.list|${GH}/YouTube/YouTube.list
+Disney.list|${GH}/Disney/Disney.list
+Twitter.list|${GH}/Twitter/Twitter.list
+Facebook.list|${GH}/Facebook/Facebook.list
+Instagram.list|${GH}/Instagram/Instagram.list
+Spotify.list|${GH}/Spotify/Spotify.list
+Google.list|${GH}/Google/Google.list
+OneDrive.list|${GH}/OneDrive/OneDrive.list
 Steam.list|https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/refs/heads/master/Clash/Ruleset/Steam.list
 LAN_SPLITTER.list|https://fastly.jsdelivr.net/gh/fmz200/wool_scripts@main/Loon/rule/LAN.list
 mihomo.mrs|https://fastly.jsdelivr.net/gh/privacy-protection-tools/anti-ad.github.io@master/docs/mihomo.mrs
@@ -35,39 +30,27 @@ EOF
 }
 
 ok=0; fail=0
+mkdir -p "$RULE_DIR"
 
-download_file() {
-  local filename="$1" url="$2" ua="$3"
-  tmpfile=$(mktemp -p "$REPO_DIR")
+echo "=== Downloading rules ==="
+while IFS='|' read -r filename url; do
+  eval "url=$url"
+  tmpfile=$(mktemp)
   set +e
   http_code=$(curl -sL --connect-timeout 15 --max-time 30 \
-    ${ua:+-A "$ua"} \
     -w "%{http_code}" -o "$tmpfile" "$url" 2>/dev/null)
   size=$(wc -c < "$tmpfile" 2>/dev/null || echo 0)
   set -e
   if [ "$http_code" = "200" ] && [ "$size" -gt "$MIN_SIZE" ]; then
-    mv "$tmpfile" "$RULE_DIR/$filename"
+    cp "$tmpfile" "$RULE_DIR/$filename"
     echo "  OK  $filename ($size bytes)"
-    return 0
+    ok=$((ok+1))
   else
     echo " FAIL $filename (HTTP $http_code, size $size)"
-    rm -f "$tmpfile"
-    return 1
+    fail=$((fail+1))
   fi
-}
-
-mkdir -p "$RULE_DIR"
-
-echo "=== kelee.one (UA: $UA) ==="
-while IFS='|' read -r filename url; do
-  download_file "$filename" "$url" "$UA" && ok=$((ok+1)) || fail=$((fail+1))
-done < <(source_urls)
-
-echo ""
-echo "=== GitHub/CDN ==="
-while IFS='|' read -r filename url; do
-  download_file "$filename" "$url" "" && ok=$((ok+1)) || fail=$((fail+1))
-done < <(direct_urls)
+  rm -f "$tmpfile"
+done < <(urls)
 
 echo ""
 echo "=== $ok OK, $fail failed ==="
