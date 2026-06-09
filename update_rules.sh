@@ -2,8 +2,8 @@
 set -e
 
 REPO_DIR="/data/data/com.termux/files/home/downloads"
-PROXY="http://127.0.0.1:7890"
 RULE_DIR="$REPO_DIR/rule_provider"
+UA="clash.meta/1.18.0"
 MIN_SIZE=100
 
 source_urls() {
@@ -34,20 +34,20 @@ mihomo.mrs|https://fastly.jsdelivr.net/gh/privacy-protection-tools/anti-ad.githu
 EOF
 }
 
-download_with_proxy() {
-  local filename="$1" url="$2"
-  tmpfile=$(mktemp)
+ok=0; fail=0
+
+download_file() {
+  local filename="$1" url="$2" ua="$3"
+  tmpfile=$(mktemp -p "$REPO_DIR")
   set +e
   http_code=$(curl -sL --connect-timeout 15 --max-time 30 \
-    -x "$PROXY" \
-    -A "clash.meta/1.18.0" \
+    ${ua:+-A "$ua"} \
     -w "%{http_code}" -o "$tmpfile" "$url" 2>/dev/null)
   size=$(wc -c < "$tmpfile" 2>/dev/null || echo 0)
   set -e
   if [ "$http_code" = "200" ] && [ "$size" -gt "$MIN_SIZE" ]; then
-    cp "$tmpfile" "$RULE_DIR/$filename"
+    mv "$tmpfile" "$RULE_DIR/$filename"
     echo "  OK  $filename ($size bytes)"
-    rm -f "$tmpfile"
     return 0
   else
     echo " FAIL $filename (HTTP $http_code, size $size)"
@@ -55,64 +55,26 @@ download_with_proxy() {
     return 1
   fi
 }
-
-download_direct() {
-  local filename="$1" url="$2"
-  tmpfile=$(mktemp)
-  set +e
-  http_code=$(curl -sL --connect-timeout 15 --max-time 30 \
-    -w "%{http_code}" -o "$tmpfile" "$url" 2>/dev/null)
-  size=$(wc -c < "$tmpfile" 2>/dev/null || echo 0)
-  set -e
-  if [ "$http_code" = "200" ] && [ "$size" -gt "$MIN_SIZE" ]; then
-    cp "$tmpfile" "$RULE_DIR/$filename"
-    echo "  OK  $filename ($size bytes)"
-    rm -f "$tmpfile"
-    return 0
-  else
-    echo " FAIL $filename (HTTP $http_code, size $size)"
-    rm -f "$tmpfile"
-    return 1
-  fi
-}
-
-ok=0
-fail=0
-
-echo "=== Proxy check ==="
-proxy_test=$(curl -s --connect-timeout 5 -x "$PROXY" -o /dev/null -w "%{http_code}" "http://www.gstatic.com/generate_204" 2>/dev/null)
-if [ "$proxy_test" != "204" ]; then
-  echo "WARNING: Proxy $PROXY not responding, kelee.one download will likely fail"
-fi
 
 mkdir -p "$RULE_DIR"
 
-echo ""
-echo "=== Downloading from kelee.one (via proxy) ==="
+echo "=== kelee.one (UA: $UA) ==="
 while IFS='|' read -r filename url; do
-  if download_with_proxy "$filename" "$url"; then
-    ok=$((ok+1))
-  else
-    fail=$((fail+1))
-  fi
+  download_file "$filename" "$url" "$UA" && ok=$((ok+1)) || fail=$((fail+1))
 done < <(source_urls)
 
 echo ""
-echo "=== Downloading from GitHub/CDN (direct) ==="
+echo "=== GitHub/CDN ==="
 while IFS='|' read -r filename url; do
-  if download_direct "$filename" "$url"; then
-    ok=$((ok+1))
-  else
-    fail=$((fail+1))
-  fi
+  download_file "$filename" "$url" "" && ok=$((ok+1)) || fail=$((fail+1))
 done < <(direct_urls)
 
 echo ""
-echo "=== Result: $ok OK, $fail failed ==="
+echo "=== $ok OK, $fail failed ==="
 
 cd "$REPO_DIR"
 if git diff --quiet && git diff --cached --quiet; then
-  echo "No changes, skip push."
+  echo "No changes, skip."
   exit 0
 fi
 
