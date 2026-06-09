@@ -1,0 +1,456 @@
+# 此为精简配置，如需更为详细的配置，可参考 https://wiki.metacubex.one/config
+# 如不会配置，也可自行寻找懒人配置，例如(Surfing 模块配置)：https://raw.githubusercontent.com/GitMetaio/Surfing/refs/heads/main/box_bll/clash/config.yaml
+proxy-providers:
+  亏本机场:
+    type: http
+    url: "https://dash.knjc.cfd/api/v1/client/subscribe?token=cfc896fdc189f5a9e7a35fc52c07aa1c"
+    path: ./proxy_provider/proxy1.yaml
+    interval: 86400
+    health-check:
+      enable: true
+      url: http://www.gstatic.com/generate_204
+      interval: 300
+      timeout: 1000
+      tolerance: 100
+  自建:
+    type: http
+    url: "http://10.5.61.238:59999/sub/71344843d2a148ae"
+    path: ./proxy_provider/proxy2.yaml
+    interval: 86400
+    health-check:
+      enable: true
+      url: http://www.gstatic.com/generate_204
+      interval: 300
+      timeout: 1000
+      tolerance: 100
+
+
+
+#port: 7892 # HTTP(S) 代理服务器端口
+#socks-port: 7891 # SOCKS5 代理端口
+mixed-port: 7890
+redir-port: 9797
+tproxy-port: 9898
+mode: Rule
+bind-address: '*'
+ipv6: true
+allow-lan: true
+unified-delay: false
+tcp-concurrent: true
+log-level: error
+find-process-mode: always
+external-controller: 0.0.0.0:9090
+external-ui: ./dashboard
+geox-url:
+  geoip: "https://fastly.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@release/geoip.dat"
+  geosite: "https://fastly.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@release/geosite.dat"
+  mmdb: "https://fastly.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@release/geoip.metadb"
+
+geo-auto-update: true # 是否自动更新 geodata
+geo-update-interval: 24 # 更新间隔，单位：小时
+
+
+
+profile:
+  store-selected: true
+  store-fake-ip: true
+
+sniffer:
+  enable: true
+  override-destination: false
+  sniff:
+    HTTP:
+      ports: [80, 8080-8880]
+      override-destination: true
+    TLS:
+      ports: [443, 8443]
+    QUIC:
+      ports: [443, 8443]
+
+tun:
+  include-uid: []
+  exclude-uid: [1000,1001,1002,1027,6100,6101,6102,6110,6120,7100,10005,10006,10024,10026,10028,10029,10032,10034,10040,10042,10044,10059,10060,10061,10062,10070,10078,10088,10089,10090,10095,10098,10105,10131,10132,10134,10135,10137,10138,10139,10140,10141,10142,10143,10144,10145,10146,10147,10149,10150,10151,10152,10155,10156,10160,10161,10163,10164,10165,10166,10167,10168,10169,10170,10171,10172,10173,10174,10176,10177,10178,10179,10180,10181,10182,10186,10187,10188,10190,10191,10193,10195,10196,10197,10198,10199,10200,10201,10202,10205,10209,10215,10220,10224,10226,10235,10238,10249,10276,10277,10278,10279,10280,10281,10282,10283,10284,10285,10286,10287,10289,10290,10291,10292,10293,10294,10296,10297,10298,10299,10300,10301,10302,10303,10304,10305,10307,10308,10310,10312,10313,10314,10317,10318,10321,10322,10326,10329,10332,10334,10336,10337,10338,10339,10343,10344,10348,10349,10356,10357,10360,10361,10364,10384,10386,10387,99901000,99901001,99910088,99910143,99910151,99910169,99910226]
+  enable: true
+  device: meta
+  stack: gvisor
+  dns-hijack: [any:53, tcp://any:53]
+  udp-timeout: 300
+  auto-route: true
+  auto-redirect: false
+  auto-detect-interface: true
+  strict-route: false
+
+dns:
+  enable: true
+  ipv6: true
+  listen: 0.0.0.0:1053
+  enhanced-mode: fake-ip
+  fake-ip-range: 198.18.0.1/16
+  fake-ip-filter:
+    - "+.*"
+  proxy-server-nameserver:
+    - 223.5.5.5
+  nameserver:
+    - 101.226.4.6
+    - 202.96.209.133
+    - 218.2.135.1
+    - 223.5.5.5
+    - 202.102.213.68
+
+proxies:
+  - {name: DNS_Hijack, type: dns}
+
+proxy-groups:
+
+  - name: 手动选择
+    type: select
+    include-all: true
+    exclude-type: "dns"
+    proxies: [自动选择, DIRECT, 香港自动策略, 台湾自动策略, 日本自动策略, 韩国自动策略, 新国自动策略, 美国自动策略, 香港手动策略, 台湾手动策略, 日本手动策略, 韩国手动策略, 新国手动策略, 美国手动策略]
+    icon: https://ghfast.top/raw.githubusercontent.com/Koolson/Qure/refs/heads/master/IconSet/Color/Proxy.png
+
+  - name: AI
+    type: select
+    proxies: [自动选择, 手动选择, 美国自动策略, 美国手动策略, 香港自动策略, 香港手动策略, 台湾自动策略, 台湾手动策略, 日本自动策略, 日本手动策略, 韩国自动策略, 韩国手动策略, 新国自动策略, 新国手动策略, DIRECT]
+    icon: https://cdn.jsdelivr.net/gh/GitMetaio/Surfing@main/app/icon/OpenAI.svg
+
+  - name: Telegram
+    type: select
+    proxies: [自动选择, 手动选择, 新国自动策略, 新国手动策略, 香港自动策略, 香港手动策略, 台湾自动策略, 台湾手动策略, 日本自动策略, 日本手动策略, 韩国自动策略, 韩国手动策略, 美国自动策略, 美国手动策略, DIRECT]
+    icon: https://raw.githubusercontent.com/Orz-3/mini/master/Color/Telegram.png
+
+  - name: YouTube
+    type: select
+    proxies: [自动选择, 手动选择, 香港自动策略, 香港手动策略, 台湾自动策略, 台湾手动策略, 日本自动策略, 日本手动策略, 韩国自动策略, 韩国手动策略, 新国自动策略, 新国手动策略, 美国自动策略, 美国手动策略, DIRECT]
+    icon: https://raw.githubusercontent.com/Orz-3/mini/master/Color/YouTube.png
+
+  - name: GitHub
+    type: select
+    proxies: [自动选择, 手动选择, 香港自动策略, 香港手动策略, 台湾自动策略, 台湾手动策略, 日本自动策略, 日本手动策略, 韩国自动策略, 韩国手动策略, 新国自动策略, 新国手动策略, 美国自动策略, 美国手动策略, DIRECT]
+    icon: https://raw.githubusercontent.com/Orz-3/mini/master/Color/github.png
+
+  - name: Steam
+    type: select
+    proxies: [自动选择, 手动选择, 香港自动策略, 香港手动策略, 台湾自动策略, 台湾手动策略, 日本自动策略, 日本手动策略, 韩国自动策略, 韩国手动策略, 新国自动策略, 新国手动策略, 美国自动策略, 美国手动策略, DIRECT]
+    icon: https://raw.githubusercontent.com/Orz-3/mini/master/Color/Steam.png
+
+  - name: TikTok
+    type: select
+    proxies: [自动选择, 手动选择, 新国自动策略, 新国手动策略, 香港自动策略, 香港手动策略, 台湾自动策略, 台湾手动策略, 日本自动策略, 日本手动策略, 韩国自动策略, 韩国手动策略, 美国自动策略, 美国手动策略, DIRECT]
+    icon: https://raw.githubusercontent.com/Orz-3/mini/master/Color/TikTok.png
+
+  - name: Netflix
+    type: select
+    proxies: [自动选择, 手动选择, 香港自动策略, 香港手动策略, 台湾自动策略, 台湾手动策略, 日本自动策略, 日本手动策略, 韩国自动策略, 韩国手动策略, 新国自动策略, 新国手动策略, 美国自动策略, 美国手动策略, DIRECT]
+    icon: https://raw.githubusercontent.com/Orz-3/mini/master/Color/Netflix.png
+
+  - name: Disney
+    type: select
+    proxies: [自动选择, 手动选择, 美国自动策略, 美国手动策略, 香港自动策略, 香港手动策略, 台湾自动策略, 台湾手动策略, 日本自动策略, 日本手动策略, 韩国自动策略, 韩国手动策略, 新国自动策略, 新国手动策略, DIRECT]
+    icon: https://raw.githubusercontent.com/Orz-3/mini/master/Color/DisneyPlus.png
+
+  - name: Twitter
+    type: select
+    proxies: [自动选择, 手动选择, 香港自动策略, 香港手动策略, 台湾自动策略, 台湾手动策略, 日本自动策略, 日本手动策略, 韩国自动策略, 韩国手动策略, 新国自动策略, 新国手动策略, 美国自动策略, 美国手动策略, DIRECT]
+    icon: https://raw.githubusercontent.com/Orz-3/mini/master/Color/Twitter.png
+
+  - name: Facebook
+    type: select
+    proxies: [自动选择, 手动选择, 香港自动策略, 香港手动策略, 台湾自动策略, 台湾手动策略, 日本自动策略, 日本手动策略, 韩国自动策略, 韩国手动策略, 新国自动策略, 新国手动策略, 美国自动策略, 美国手动策略, DIRECT]
+    icon: https://cdn.jsdelivr.net/gh/GitMetaio/Surfing@main/app/icon/Facebook.svg
+
+  - name: Instagram
+    type: select
+    proxies: [自动选择, 手动选择, 香港自动策略, 香港手动策略, 台湾自动策略, 台湾手动策略, 日本自动策略, 日本手动策略, 韩国自动策略, 韩国手动策略, 新国自动策略, 新国手动策略, 美国自动策略, 美国手动策略, DIRECT]
+    icon: https://raw.githubusercontent.com/Orz-3/mini/master/Color/Instagram.png
+
+  - name: Spotify
+    type: select
+    proxies: [自动选择, 手动选择, 香港自动策略, 香港手动策略, 台湾自动策略, 台湾手动策略, 日本自动策略, 日本手动策略, 韩国自动策略, 韩国手动策略, 新国自动策略, 新国手动策略, 美国自动策略, 美国手动策略, DIRECT]
+    icon: https://raw.githubusercontent.com/Orz-3/mini/master/Color/Spotify.png
+
+  - name: Google
+    type: select
+    proxies: [自动选择, 手动选择, 香港自动策略, 香港手动策略, 台湾自动策略, 台湾手动策略, 日本自动策略, 日本手动策略, 韩国自动策略, 韩国手动策略, 新国自动策略, 新国手动策略, 美国自动策略, 美国手动策略, DIRECT]
+    icon: https://raw.githubusercontent.com/Orz-3/mini/master/Color/Google.png
+
+  - name: AD
+    type: select
+    proxies: [REJECT, DIRECT]
+    icon: https://raw.githubusercontent.com/Orz-3/mini/refs/heads/master/Alpha/OneDrive.png
+
+  - name: OneDrive
+    type: select
+    proxies: [自动选择, 手动选择, 香港自动策略, 香港手动策略, 台湾自动策略, 台湾手动策略, 日本自动策略, 日本手动策略, 韩国自动策略, 韩国手动策略, 新国自动策略, 新国手动策略, 美国自动策略, 美国手动策略, DIRECT]
+    icon: https://raw.githubusercontent.com/Orz-3/mini/refs/heads/master/Alpha/OneDrive.png
+
+  - name: 漏网之鱼
+    type: select
+    proxies: [自动选择, 手动选择, DIRECT]
+    icon: https://ghfast.top/raw.githubusercontent.com/Koolson/Qure/refs/heads/master/IconSet/Color/Final.png
+
+
+  - name: 香港手动策略
+    type: select
+    hidden: false
+    include-all: true
+    filter: "(?i)港|HK|Hong Kong|HongKong"
+    icon: https://ghfast.top/raw.githubusercontent.com/Koolson/Qure/refs/heads/master/IconSet/Color/HK.png
+
+  - name: 台湾手动策略
+    type: select
+    hidden: false
+    include-all: true
+    filter: "(?i)台|TW|Taiwan"
+    icon: https://ghfast.top/raw.githubusercontent.com/Koolson/Qure/refs/heads/master/IconSet/Color/TW.png
+
+  - name: 新国手动策略
+    type: select
+    hidden: false
+    include-all: true
+    filter: "(?i)新加坡|坡|狮城|SG|Singapore"
+    icon: https://ghfast.top/raw.githubusercontent.com/Koolson/Qure/refs/heads/master/IconSet/Color/SG.png
+
+  - name: 日本手动策略
+    type: select
+    hidden: false
+    include-all: true
+    filter: "(?i)日本|川日|东京|大阪|泉日|埼玉|沪日|深日|[^-]日|JP|Japan"
+    icon: https://ghfast.top/raw.githubusercontent.com/Koolson/Qure/refs/heads/master/IconSet/Color/JP.png
+
+  - name: 韩国手动策略
+    type: select
+    hidden: false
+    include-all: true
+    filter: "(?i)韩|KR|Korea"
+    icon: https://ghfast.top/raw.githubusercontent.com/Koolson/Qure/refs/heads/master/IconSet/Color/KR.png
+
+  - name: 美国手动策略
+    type: select
+    hidden: false
+    include-all: true
+    filter: "(?i)美|波特兰|达拉斯|俄勒冈|凤凰城|费利蒙|硅谷|拉斯维加斯|洛杉矶|圣何塞|圣克拉拉|西雅图|芝加哥|US|United States"
+    icon: https://ghfast.top/raw.githubusercontent.com/Koolson/Qure/refs/heads/master/IconSet/Color/US.png
+
+  # 【关键调整】：将“国内直连”移到节点提取组的最末尾，确保在面板中它保持在节点大类的边缘，不再乱窜
+
+  # =================================================================
+  # 区块四：后台自动测试延迟组（完全隐藏，不占用面板视觉）
+  # =================================================================
+  - name: 自动选择
+    type: url-test
+    hidden: false
+    include-all: true
+    exclude-type: "dns"
+    url: http://www.gstatic.com/generate_204
+    interval: 300
+    tolerance: 50
+
+  - name: 香港自动策略
+    type: url-test
+    hidden: true
+    include-all: true
+    filter: "(?i)港|HK|Hong Kong|HongKong"
+    url: http://www.gstatic.com/generate_204
+    interval: 300
+    tolerance: 50
+
+  - name: 台湾自动策略
+    type: url-test
+    hidden: true
+    include-all: true
+    filter: "(?i)台|TW|Taiwan"
+    url: http://www.gstatic.com/generate_204
+    interval: 300
+    tolerance: 50
+
+  - name: 新国自动策略
+    type: url-test
+    hidden: true
+    include-all: true
+    filter: "(?i)新加坡|坡|狮城|SG|Singapore"
+    url: http://www.gstatic.com/generate_204
+    interval: 300
+    tolerance: 50
+
+  - name: 日本自动策略
+    type: url-test
+    hidden: true
+    include-all: true
+    filter: "(?i)日本|川日|东京|大阪|泉日|埼玉|沪日|深日|[^-]日|JP|Japan"
+    url: http://www.gstatic.com/generate_204
+    interval: 300
+    tolerance: 50
+
+  - name: 韩国自动策略
+    type: url-test
+    hidden: true
+    include-all: true
+    filter: "(?i)韩|KR|Korea"
+    url: http://www.gstatic.com/generate_204
+    interval: 300
+    tolerance: 50
+
+  - name: 美国自动策略
+    type: url-test
+    hidden: true
+    include-all: true
+    filter: "(?i)美|波特兰|达拉斯|俄勒冈|凤凰城|费利蒙|硅谷|拉斯维加斯|洛杉矶|圣何塞|圣克拉拉|西雅图|芝加哥|US|United States"
+    url: http://www.gstatic.com/generate_204
+    interval: 300
+    tolerance: 50
+
+
+rule-providers:
+  Steam:
+    type: http
+    behavior: classical
+    format: text
+    interval: 86400
+    path: ./rule_provider/Steam.list
+    url: "https://raw.githubusercontent.com/liyiboa/mihomo-config/master/rule_provider/Steam.list"
+  Telegram:
+    type: http
+    behavior: classical
+    format: text
+    interval: 86400
+    path: ./rule_provider/Telegram.list
+    url: "https://raw.githubusercontent.com/liyiboa/mihomo-config/master/rule_provider/Telegram.list"
+  TikTok:
+    type: http
+    behavior: classical
+    format: text
+    interval: 86400
+    path: ./rule_provider/TikTok.list
+    url: "https://raw.githubusercontent.com/liyiboa/mihomo-config/master/rule_provider/TikTok.list"
+  AI:
+    type: http
+    behavior: classical
+    format: text
+    interval: 86400
+    path: ./rule_provider/AI.list
+    url: "https://raw.githubusercontent.com/liyiboa/mihomo-config/master/rule_provider/AI.list"
+  AppleAccount:
+    type: http
+    behavior: classical
+    format: text
+    interval: 86400
+    path: ./rule_provider/AppleAccount.list
+    url: "https://raw.githubusercontent.com/liyiboa/mihomo-config/master/rule_provider/AppleAccount.list"
+  AppStore:
+    type: http
+    behavior: classical
+    format: text
+    interval: 86400
+    path: ./rule_provider/AppStore.list
+    url: "https://raw.githubusercontent.com/liyiboa/mihomo-config/master/rule_provider/AppStore.list"
+  GitHub:
+    type: http
+    behavior: classical
+    format: text
+    interval: 86400
+    path: ./rule_provider/GitHub.list
+    url: "https://raw.githubusercontent.com/liyiboa/mihomo-config/master/rule_provider/GitHub.list"
+  Netflix:
+    type: http
+    behavior: classical
+    format: text
+    interval: 86400
+    path: ./rule_provider/Netflix.list
+    url: "https://raw.githubusercontent.com/liyiboa/mihomo-config/master/rule_provider/Netflix.list"
+  YouTube:
+    type: http
+    behavior: classical
+    format: text
+    interval: 86400
+    path: ./rule_provider/YouTube.list
+    url: "https://raw.githubusercontent.com/liyiboa/mihomo-config/master/rule_provider/YouTube.list"
+  Disney:
+    type: http
+    behavior: classical
+    format: text
+    interval: 86400
+    path: ./rule_provider/Disney.list
+    url: "https://raw.githubusercontent.com/liyiboa/mihomo-config/master/rule_provider/Disney.list"
+  Twitter:
+    type: http
+    behavior: classical
+    format: text
+    interval: 86400
+    path: ./rule_provider/Twitter.list
+    url: "https://raw.githubusercontent.com/liyiboa/mihomo-config/master/rule_provider/Twitter.list"
+  Facebook:
+    type: http
+    behavior: classical
+    format: text
+    interval: 86400
+    path: ./rule_provider/Facebook.list
+    url: "https://raw.githubusercontent.com/liyiboa/mihomo-config/master/rule_provider/Facebook.list"
+  Instagram:
+    type: http
+    behavior: classical
+    format: text
+    interval: 86400
+    path: ./rule_provider/Instagram.list
+    url: "https://raw.githubusercontent.com/liyiboa/mihomo-config/master/rule_provider/Instagram.list"
+  Spotify:
+    type: http
+    behavior: classical
+    format: text
+    interval: 86400
+    path: ./rule_provider/Spotify.list
+    url: "https://raw.githubusercontent.com/liyiboa/mihomo-config/master/rule_provider/Spotify.list"
+  Google:
+    type: http
+    behavior: classical
+    format: text
+    interval: 86400
+    path: ./rule_provider/Google.list
+    url: "https://raw.githubusercontent.com/liyiboa/mihomo-config/master/rule_provider/Google.list"
+  OneDrive:
+    type: http
+    behavior: classical
+    format: text
+    interval: 86400
+    path: ./rule_provider/OneDrive.list
+    url: "https://raw.githubusercontent.com/liyiboa/mihomo-config/master/rule_provider/OneDrive.list"
+  LAN_SPLITTER:
+    type: http
+    behavior: classical
+    format: text
+    interval: 86400
+    path: ./rule_provider/LAN_SPLITTER.list
+    url: "https://raw.githubusercontent.com/liyiboa/mihomo-config/master/rule_provider/LAN_SPLITTER.list"
+  AD:
+    type: http
+    behavior: domain
+    format: mrs
+    interval: 86400
+    path: ./rule_provider/mihomo.mrs
+    url: "https://raw.githubusercontent.com/liyiboa/mihomo-config/master/rule_provider/mihomo.mrs"
+
+
+rules:
+  - DST-PORT,53,DNS_Hijack
+
+  - RULE-SET,Steam,Steam
+  - RULE-SET,Telegram,Telegram
+  - RULE-SET,TikTok,TikTok
+  - RULE-SET,AI,AI
+  - RULE-SET,AppleAccount,DIRECT
+  - RULE-SET,AppStore,DIRECT
+  - RULE-SET,GitHub,GitHub
+  - RULE-SET,Netflix,Netflix
+  - RULE-SET,YouTube,YouTube
+  - RULE-SET,Disney,Disney
+  - RULE-SET,Twitter,Twitter
+  - RULE-SET,Facebook,Facebook
+  - RULE-SET,Instagram,Instagram
+  - RULE-SET,Spotify,Spotify
+  - RULE-SET,Google,Google
+  - RULE-SET,OneDrive,OneDrive
+  - RULE-SET,AD,AD
+  - RULE-SET,LAN_SPLITTER,DIRECT
+  - GEOSITE,CN,DIRECT
+  - GEOIP,CN,DIRECT
+  - MATCH,漏网之鱼
