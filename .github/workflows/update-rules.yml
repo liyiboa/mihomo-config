@@ -1,0 +1,64 @@
+name: Update Rule Files
+
+on:
+  schedule:
+    - cron: '0 3 * * *'
+  workflow_dispatch:
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download from kelee.one
+        shell: bash
+        run: |
+          UA="clash.meta/1.18.0"
+          curl -sL -A "$UA" -o rule_provider/Telegram.list "https://rule.kelee.one/Loon/Telegram.lsr"
+          curl -sL -A "$UA" -o rule_provider/TikTok.list "https://kelee.one/Tool/Loon/Lsr/TikTok.lsr"
+          curl -sL -A "$UA" -o rule_provider/AI.list "https://kelee.one/Tool/Loon/Lsr/AI.lsr"
+          curl -sL -A "$UA" -o rule_provider/AppleAccount.list "https://kelee.one/Tool/Loon/Lsr/AppleAccount.lsr"
+          curl -sL -A "$UA" -o rule_provider/AppStore.list "https://kelee.one/Tool/Loon/Lsr/AppStore.lsr"
+          curl -sL -A "$UA" -o rule_provider/GitHub.list "https://rule.kelee.one/Loon/GitHub.lsr"
+          curl -sL -A "$UA" -o rule_provider/Netflix.list "https://rule.kelee.one/Loon/Netflix.lsr"
+          curl -sL -A "$UA" -o rule_provider/YouTube.list "https://rule.kelee.one/Loon/YouTube.lsr"
+          curl -sL -A "$UA" -o rule_provider/Disney.list "https://rule.kelee.one/Loon/Disney.lsr"
+          curl -sL -A "$UA" -o rule_provider/Twitter.list "https://rule.kelee.one/Loon/Twitter.lsr"
+          curl -sL -A "$UA" -o rule_provider/Facebook.list "https://rule.kelee.one/Loon/Facebook.lsr"
+          curl -sL -A "$UA" -o rule_provider/Instagram.list "https://rule.kelee.one/Loon/Instagram.lsr"
+          curl -sL -A "$UA" -o rule_provider/Spotify.list "https://rule.kelee.one/Loon/Spotify.lsr"
+          curl -sL -A "$UA" -o rule_provider/Google.list "https://rule.kelee.one/Loon/Google.lsr"
+          curl -sL -A "$UA" -o rule_provider/OneDrive.list "https://rule.kelee.one/Loon/OneDrive.lsr"
+
+      - name: Validate kelee.one files
+        run: |
+          for f in rule_provider/*.list; do
+            size=$(wc -c < "$f")
+            if [ "$size" -le 100 ]; then
+              echo "ERROR: $f is too small ($size bytes)"
+              exit 1
+            fi
+            echo "  $f ($size bytes)"
+          done
+
+      - name: Download from GitHub/CDN
+        run: |
+          curl -sL -o rule_provider/Steam.list \
+            "https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/refs/heads/master/Clash/Ruleset/Steam.list"
+          curl -sL -o rule_provider/LAN_SPLITTER.list \
+            "https://fastly.jsdelivr.net/gh/fmz200/wool_scripts@main/Loon/rule/LAN.list"
+          curl -sL -o rule_provider/mihomo.mrs \
+            "https://fastly.jsdelivr.net/gh/privacy-protection-tools/anti-ad.github.io@master/docs/mihomo.mrs"
+
+      - name: Commit & Push
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -A
+          if git diff --cached --quiet; then
+            echo "No changes, skip commit"
+            exit 0
+          fi
+          git commit -m "Auto update rule files $(date '+%Y-%m-%d %H:%M')"
+          git push
